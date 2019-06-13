@@ -8,6 +8,7 @@ MMST is used to create spanning trees in P2P networks while minimizing connectio
 - Avoid partitions
 - Self-healing
 - Don't actually form a minimal spanning tree
+  - Minimal spanning trees potentially have more hops and highest latency
 
 ## Prior work
 
@@ -25,7 +26,7 @@ https://ranger.mauve.moe/graph-mst-viz/
 ## Knobs
 
 - How big a sample of peers should you load
-- What percentage of peers should connect to further peers
+- What percentage of peers should connect to their furthest peer
 
 ## Uses
 
@@ -35,7 +36,6 @@ https://ranger.mauve.moe/graph-mst-viz/
 
 ## Roadmap
 
-- [ ] Polish visualization
 - [ ] Sketch up API / unit tests
 - [ ] Figure out how to view the entire state of the network
 - [ ] Make visualization for viewing state of network (static)
