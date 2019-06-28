@@ -40,6 +40,7 @@ https://ranger.mauve.moe/graph-mst-viz/
 - [ ] Figure out how to view the entire state of the network
 - [ ] Make visualization for viewing state of network (static)
 - [ ] Implement with hyperswarm
+  - [ ] Find own ID using [ping method](https://github.com/hyperswarm/discovery#dpingcb)
 - [ ] Test with multifeed
 - [ ] Integrate with discovery-swarm-webrtc
 - [ ] Test that it's all working / TODO

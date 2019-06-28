@@ -1,16 +1,10 @@
 const test = require('tape')
 
-module.exports = ({
-  // Initialize whatever is needed
-  init,
-  createPeer,
-  createFakeID,
-  lookup,
-  connect,
-  getGraph,
-  destroy
-}) => {
-  test('happy path')
+module.exports = (harness) => {
+  test('happy path', async (t) => {
+    // Initialize
+    // Create a bunch of peers
+  })
 
   test('fewer peers than sample size')
 
@@ -19,7 +13,6 @@ module.exports = ({
   test('unable to connect to peer')
 
   test('able to connect to second peer')
-
 
   test('large sample size')
 
