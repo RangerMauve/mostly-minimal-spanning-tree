@@ -1,0 +1,41 @@
+{
+  "name": "mostly-minimal-spanning-tree",
+  "version": "1.0.0",
+  "description": "MMST is used to create spanning trees in P2P networks while minimizing connections per node",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-visualizer": "browserify ./visualizer > ./visualizer/bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RangerMauve/mostly-minimal-spanning-tree.git"
+  },
+  "keywords": [
+    "mmst",
+    "dat",
+    "network",
+    "graph",
+    "minimize"
+  ],
+  "author": "rangermauve",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RangerMauve/mostly-minimal-spanning-tree/issues"
+  },
+  "homepage": "https://github.com/RangerMauve/mostly-minimal-spanning-tree#readme",
+  "devDependencies": {
+    "browserify": "^16.3.0",
+    "jsnetworkx": "^0.3.4"
+  },
+  "dependencies": {
+    "delay": "^4.3.0",
+    "promise-defer": "^1.0.0",
+    "randomize-array": "^1.2.0",
+    "then-eos": "^1.0.0",
+    "xor-distance": "^2.0.0"
+  }
+}
