@@ -44,11 +44,14 @@ class InMemoryHarness {
 
   async lookup () {
     const stream = new Readable({
-      read () {},
+      read () {
+        for (let { id } of this.peers) {
+          this.push(id)
+        }
+        this.push(null)
+      },
       objectMode: true
     })
-
-    stream.push(this.peers.map(({ id }) => id))
 
     return stream
   }
