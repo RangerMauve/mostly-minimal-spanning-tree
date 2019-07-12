@@ -6,9 +6,10 @@ const distance = require('xor-distance')
 
 const EventEmitter = require('events')
 
-const DEFAULT_SAMPLE_SIZE = 16
+const DEFAULT_SAMPLE_SIZE = 10
 const DEFAULT_PERCENT_FAR = 0.33
 const DEFAULT_LOOKUP_TIMEOUT = 1000
+const DEFAULT_MAX_PEERS = 4
 
 module.exports =
 
@@ -39,14 +40,20 @@ class MMST extends EventEmitter {
     // But the less likely it will be to have partitions
     percentFar = DEFAULT_PERCENT_FAR,
 
+    // If we reach this many peers, start disconnecting new incoming connections
+    maxPeers = DEFAULT_MAX_PEERS,
+
     // How long to lookup peers fore before giving up and using what you have
-    lookupTimeout = DEFAULT_LOOKUP_TIMEOUT
+    lookupTimeout = DEFAULT_LOOKUP_TIMEOUT,
+
   }) {
     super()
+    this.id = id
     this._lookup = lookup
     this._connect = connect
     this.sampleSize = sampleSize
     this.percentFar = percentFar
+    this.maxPeers = maxPeers
     this.lookupTimeout = lookupTimeout
 
     this.connectedPeers = new Set()
@@ -56,6 +63,11 @@ class MMST extends EventEmitter {
 
   // This should be invoked when there's an incoming connection
   handleIncoming (id, connection) {
+    // If we reached our max number of connections disconnect new peers
+    if(this.connectedPeers.size >= this.maxPeers) {
+      connection.close()
+      return
+    }
     this.addConnection(id, connection)
   }
 
@@ -78,6 +90,12 @@ class MMST extends EventEmitter {
 
     const gotEnough = defer()
 
+    const finish = Promise.race([
+      eos(stream),
+      delay(this.lookupTimeout),
+      gotEnough.promise
+    ])
+
     stream.on('data', (peers) => {
       // Build up array of peers
       found.push(...peers)
@@ -87,11 +105,7 @@ class MMST extends EventEmitter {
     })
 
     // Start looking up peers, with timeout
-    await Promise.race([
-      eos(stream),
-      delay(this.lookupTimeout),
-      defer.promise
-    ])
+    await finish
 
     if (this.destroyed) return
 
@@ -139,6 +153,9 @@ class MMST extends EventEmitter {
 
     // If `hasConnectedFar`, return
     if (this.hasConnectedFar) return
+
+    // If we're at the max connections we shouldn't try to reach out
+    if(this.connectedPeers.size >= this.maxPeers) return
 
     // Generate a random number [0, 1)
     const chanceFar = Math.random()
