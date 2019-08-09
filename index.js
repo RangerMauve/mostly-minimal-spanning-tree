@@ -61,10 +61,14 @@ class MMST extends EventEmitter {
     this.destroyed = false
   }
 
+  shouldHandleIncoming (id) {
+    return this.connectedPeers.size < this.maxPeers
+  }
+
   // This should be invoked when there's an incoming connection
   handleIncoming (id, connection) {
     // If we reached our max number of connections disconnect new peers
-    if(this.connectedPeers.size >= this.maxPeers) {
+    if(!this.shouldHandleIncoming(id)) {
       connection.close()
       return
     }
