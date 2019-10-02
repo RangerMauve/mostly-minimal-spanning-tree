@@ -1,5 +1,5 @@
 const delay = require('delay')
-const eos = require('then-eos')
+const eos = require('end-of-stream-promise')
 const defer = require('promise-defer')
 const randomize = require('randomize-array')
 const distance = require('xor-distance')
