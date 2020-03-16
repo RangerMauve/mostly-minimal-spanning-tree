@@ -154,11 +154,6 @@ class MMST extends EventEmitter {
         const connection = await this._connect(peer)
         connected = true
         this.addConnection(peer, connection)
-
-        // Listen on the connection close to invoke `run` again
-        connection.once('close', () => {
-          this.queue.add(() => this.run())
-        })
         break
       } catch (e) {
         // Oh well
