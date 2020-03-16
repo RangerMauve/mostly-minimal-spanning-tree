@@ -198,7 +198,7 @@ class MMST extends EventEmitter {
         this.hasConnectedFar = true
 
         // Listen on connection close and set `hasConnectedFar` false
-        connection.once('end', () => {
+        connection.once('close', () => {
           this.hasConnectedFar = false
         })
         break
