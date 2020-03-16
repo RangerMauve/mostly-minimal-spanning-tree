@@ -3,6 +3,7 @@ const eos = require('end-of-stream-promise')
 const defer = require('promise-defer')
 const randomize = require('randomize-array')
 const distance = require('xor-distance')
+const PQueue = require('p-queue').default
 
 const EventEmitter = require('events')
 
@@ -55,13 +56,17 @@ class MMST extends EventEmitter {
     this.percentFar = percentFar
     this.maxPeers = maxPeers
     this.lookupTimeout = lookupTimeout
+    this.queue = new PQueue({
+      concurrency: 1,
+      timeout: lookupTimeout + (2 * 1000)
+    })
 
     this.connectedPeers = new Set()
     this.hasConnectedFar = false
     this.destroyed = false
   }
 
-  shouldHandleIncoming (id) {
+  shouldHandleIncoming () {
     return this.connectedPeers.size < this.maxPeers
   }
 
@@ -81,11 +86,14 @@ class MMST extends EventEmitter {
     this.connectedPeers.add(stringId)
     connection.once('close', () => {
       this.connectedPeers.delete(stringId)
+      this.queue.add(() => this.run())
     })
   }
 
   // Run the algorithm
   async run () {
+    if (!this.shouldHandleIncoming()) return
+
     // If `destroyed` return
     if (this.destroyed) return
 
@@ -140,8 +148,8 @@ class MMST extends EventEmitter {
         this.addConnection(peer, connection)
 
         // Listen on the connection close to invoke `run` again
-        connection.once('end', () => {
-          this.run()
+        connection.once('close', () => {
+          this.queue.add(() => this.run())
         })
         break
       } catch (e) {

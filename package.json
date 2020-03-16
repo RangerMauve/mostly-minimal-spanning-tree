@@ -34,6 +34,7 @@
   "dependencies": {
     "delay": "^4.3.0",
     "end-of-stream-promise": "^1.0.0",
+    "p-queue": "^6.3.0",
     "promise-defer": "^1.0.0",
     "randomize-array": "^1.2.0",
     "xor-distance": "^2.0.0"
