@@ -3,6 +3,7 @@ const eos = require('end-of-stream-promise')
 const defer = require('promise-defer')
 const randomize = require('randomize-array')
 const distance = require('xor-distance')
+const PQueue = require('p-queue').default
 
 const EventEmitter = require('events')
 
@@ -46,6 +47,9 @@ class MMST extends EventEmitter {
     // How long to lookup peers fore before giving up and using what you have
     lookupTimeout = DEFAULT_LOOKUP_TIMEOUT,
 
+    // How long to wait for `run` to be finished
+    queueTimeout = lookupTimeout + (2 * 1000),
+
   }) {
     super()
     this.id = id
@@ -54,14 +58,23 @@ class MMST extends EventEmitter {
     this.sampleSize = sampleSize
     this.percentFar = percentFar
     this.maxPeers = maxPeers
+
+    if (lookupTimeout > queueTimeout) {
+      throw new Error('queueTimeout must be higher than lookupTimeout')
+    }
+
     this.lookupTimeout = lookupTimeout
+    this.queue = new PQueue({
+      concurrency: 1,
+      timeout: queueTimeout
+    })
 
     this.connectedPeers = new Set()
     this.hasConnectedFar = false
     this.destroyed = false
   }
 
-  shouldHandleIncoming (id) {
+  shouldHandleIncoming () {
     return this.connectedPeers.size < this.maxPeers
   }
 
@@ -81,11 +94,14 @@ class MMST extends EventEmitter {
     this.connectedPeers.add(stringId)
     connection.once('close', () => {
       this.connectedPeers.delete(stringId)
+      this.queue.add(() => this.run())
     })
   }
 
   // Run the algorithm
   async run () {
+    if (!this.shouldHandleIncoming()) return
+
     // If `destroyed` return
     if (this.destroyed) return
 
@@ -138,11 +154,6 @@ class MMST extends EventEmitter {
         const connection = await this._connect(peer)
         connected = true
         this.addConnection(peer, connection)
-
-        // Listen on the connection close to invoke `run` again
-        connection.once('end', () => {
-          this.run()
-        })
         break
       } catch (e) {
         // Oh well
@@ -182,7 +193,7 @@ class MMST extends EventEmitter {
         this.hasConnectedFar = true
 
         // Listen on connection close and set `hasConnectedFar` false
-        connection.once('end', () => {
+        connection.once('close', () => {
           this.hasConnectedFar = false
         })
         break
