@@ -1,6 +1,6 @@
 {
   "name": "mostly-minimal-spanning-tree",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "MMST is used to create spanning trees in P2P networks while minimizing connections per node",
   "main": "index.js",
   "directories": {
