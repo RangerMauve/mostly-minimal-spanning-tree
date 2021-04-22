@@ -81,7 +81,7 @@ class MMST extends EventEmitter {
   // This should be invoked when there's an incoming connection
   handleIncoming (id, connection) {
     // If we reached our max number of connections disconnect new peers
-    if(!this.shouldHandleIncoming(id)) {
+    if(!this.shouldHandleIncoming()) {
       connection.close()
       return
     }
@@ -89,12 +89,14 @@ class MMST extends EventEmitter {
   }
 
   // Used internally
-  addConnection (id, connection) {
+  addConnection (id, connection, reconnect) {
     const stringId = id.toString('hex')
     this.connectedPeers.add(stringId)
     connection.once('close', () => {
       this.connectedPeers.delete(stringId)
-      this.queue.add(() => this.run())
+      if (reconnect || this.connectedPeers.size === 0) {
+        this.queue.add(() => this.run())
+      }
     })
   }
 
@@ -153,7 +155,7 @@ class MMST extends EventEmitter {
       try {
         const connection = await this._connect(peer)
         connected = true
-        this.addConnection(peer, connection)
+        this.addConnection(peer, connection, true)
         break
       } catch (e) {
         // Oh well
@@ -189,7 +191,7 @@ class MMST extends EventEmitter {
       try {
         // Connect to the peer and set `hasConnectedFar` true
         const connection = await this._connect(peer)
-        this.addConnection(peer, connection)
+        this.addConnection(peer, connection, true)
         this.hasConnectedFar = true
 
         // Listen on connection close and set `hasConnectedFar` false
